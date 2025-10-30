@@ -8,7 +8,12 @@ export const TOKENS = {
 
 	// Clients
 	Prisma: Symbol("Prisma"),
+	HasherCrypto: Symbol("HasherCrypto"),
+
+	// Repositories
+	AccountRepository: Symbol("AccountRepository"),
+	PlayersRepository: Symbol("PlayersRepository"),
 
 	// services
-	ClientService: Symbol("ClientService"),
+	TibiaClientService: Symbol("TibiaClientService"),
 } as const;

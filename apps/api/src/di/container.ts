@@ -1,9 +1,11 @@
 import { container, type DependencyContainer, Lifecycle } from "tsyringe";
-import { ClientService } from "@/domain";
+import { TibiaClientService } from "@/domain";
 import { env } from "@/env";
 import { makePrisma, type Prisma } from "@/infra/clients";
+import { HasherCrypto } from "@/infra/crypto/hasher";
 import { RootLogger } from "@/infra/logging/logger";
 import { makeRequestLogger } from "@/infra/logging/request-logger";
+import { AccountRepository, PlayersRepository } from "@/repositories";
 import { TOKENS } from "./tokens";
 
 declare global {
@@ -20,11 +22,9 @@ const prismaSingleton: Prisma = global.__PRISMA__ ?? makePrisma(root);
 if (env.isDev) {
 	global.__PRISMA__ = prismaSingleton;
 }
-
-container.registerInstance(TOKENS.Prisma, prismaSingleton);
-
-// Root Global
+// Global
 container.registerInstance(TOKENS.RootLogger, root);
+container.registerInstance(TOKENS.Prisma, prismaSingleton);
 
 export function createRequestContainer(
 	context: ReqContext,
@@ -37,10 +37,29 @@ export function createRequestContainer(
 	const rootLogger = di.resolve<RootLogger>(TOKENS.RootLogger);
 	di.registerInstance(TOKENS.Logger, makeRequestLogger(rootLogger, context));
 
+	// Repositories
+	di.register(
+		TOKENS.AccountRepository,
+		{ useClass: AccountRepository },
+		{ lifecycle: Lifecycle.ResolutionScoped },
+	);
+	di.register(
+		TOKENS.PlayersRepository,
+		{ useClass: PlayersRepository },
+		{ lifecycle: Lifecycle.ResolutionScoped },
+	);
+
+	// Crypto
+	di.register(
+		TOKENS.HasherCrypto,
+		{ useClass: HasherCrypto },
+		{ lifecycle: Lifecycle.ResolutionScoped },
+	);
+
 	// Services
 	di.register(
-		TOKENS.ClientService,
-		{ useClass: ClientService },
+		TOKENS.TibiaClientService,
+		{ useClass: TibiaClientService },
 		{ lifecycle: Lifecycle.ResolutionScoped },
 	);
 

@@ -1,23 +1,12 @@
 import { base } from "@/main/rpc/base";
+import { crashReporterRoute } from "./crashReporter";
+import { fpsTrackingRoute } from "./fpsTracking";
 import { loginRoute } from "./login";
+import { servicesRoute } from "./services";
 
 export const clientRouter = base.prefix("/client").router({
+	crashReporter: crashReporterRoute,
+	fpsTracking: fpsTrackingRoute,
 	login: loginRoute,
-	services: base
-		.route({
-			method: "POST",
-			path: "/services",
-			tags: ["Client"],
-			summary: "Get client services",
-			description: "Endpoint to retrieve client services",
-		})
-		.handler(async ({ input, context }) => {
-			// const ct = file.type || "text/plain;charset=utf-8";
-			// const m = /charset=([^;]+)/i.exec(ct);
-			// const encoding = m?.[1]?.toLowerCase() || "utf-8";
-
-			// const ab = await file.arrayBuffer();
-			// const text = new TextDecoder(encoding).decode(ab);
-			return true;
-		}),
+	services: servicesRoute,
 });

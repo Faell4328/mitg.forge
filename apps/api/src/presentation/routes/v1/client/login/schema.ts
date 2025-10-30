@@ -1,4 +1,5 @@
 import z from "zod";
+import { FileToText } from "@/utils/fileToText";
 
 const LoginSchema = z
 	.object({
@@ -27,13 +28,8 @@ const LoginSchema = z
 	});
 
 const LoginFileSchema = z.instanceof(File).transform(async (file) => {
-	const contentType = file.type || "text/plain;charset=utf-8";
-	const m = /charset=([^;]+)/i.exec(contentType);
-	const encoding = m?.[1]?.toLowerCase() || "utf-8";
-	const abPromise = await file.arrayBuffer();
-	const textPromise = new TextDecoder(encoding).decode(abPromise);
-
-	return LoginSchema.parse(JSON.parse(textPromise));
+	const text = await FileToText(file);
+	return LoginSchema.parse(JSON.parse(text));
 });
 
 export const ClientLoginSchema = {

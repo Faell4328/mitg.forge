@@ -11,6 +11,9 @@ export function makePrisma(rootLogger?: Logger) {
 		user: env.DATABASE_USER,
 		password: env.DATABASE_PASSWORD,
 		database: env.DATABASE_NAME,
+		connectionLimit: 10,
+		acquireTimeout: 10000,
+		idleTimeout: 60000,
 	});
 	const prisma = new PrismaClient({
 		adapter,
@@ -29,9 +32,14 @@ export function makePrisma(rootLogger?: Logger) {
 		prisma.$on("error", (event) => rootLogger.error("prisma.error", event));
 	}
 
-	process.on("beforeExit", async () => {
-		await prisma.$disconnect().catch(() => {});
-	});
+	const shutdown = async () => {
+		try {
+			await prisma.$disconnect();
+		} catch {}
+	};
+
+	process.on("SIGINT", shutdown);
+	process.on("SIGTERM", shutdown);
 
 	return prisma;
 }

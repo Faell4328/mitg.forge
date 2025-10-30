@@ -1,0 +1,27 @@
+import { inject, injectable } from "tsyringe";
+import { TOKENS } from "@/di/tokens";
+import type { Prisma } from "@/infra/clients";
+
+@injectable()
+export class AccountRepository {
+	constructor(@inject(TOKENS.Prisma) private readonly prisma: Prisma) {}
+
+	async findByEmail(email: string) {
+		return this.prisma.accounts.findFirst({
+			where: {
+				email,
+			},
+		});
+	}
+
+	async characters(accountId: number) {
+		return this.prisma.players.findMany({
+			where: {
+				account_id: accountId,
+			},
+			orderBy: {
+				name: "asc",
+			},
+		});
+	}
+}

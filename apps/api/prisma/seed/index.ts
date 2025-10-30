@@ -1,6 +1,7 @@
 import { env } from '@/env'
 import {PrismaClient} from 'generated/client'
 import {PrismaMariaDb} from "@prisma/adapter-mariadb"
+import crypto from "node:crypto";
 
 
 
@@ -88,11 +89,13 @@ async function main() {
     }
   })
 
+  const defaultPassword = crypto.hash("sha1", "god")
+
   if (!godAccount) {
     await prisma.accounts.create({
       data: {
-        email: "@god",
-        password: "$2b$10$c2jyAqI9O0jCfkQwGMMLfepi2Fr4jxr5.9rtpOvAy/b4rFz74TZZe", // "god",
+        email: "god@god.com",
+        password: defaultPassword, // "god",
         name:"god",
         type: 5
       }
@@ -101,7 +104,7 @@ async function main() {
 
     godAccount = await prisma.accounts.findFirst({
       where: {
-        email: "@god"
+        email: "god@god.com"
       }
     })
   }
