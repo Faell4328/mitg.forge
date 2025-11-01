@@ -3,9 +3,13 @@ import z from "zod";
 export const SessionInfoSchema = {
 	input: z.undefined(),
 	output: z.object({
-		accountId: z.number(),
-		token: z.string(),
-		email: z.email(),
+		authenticated: z.boolean(),
+		session: z
+			.object({
+				token: z.string(),
+				email: z.email(),
+			})
+			.nullable(),
 	}),
 };
 

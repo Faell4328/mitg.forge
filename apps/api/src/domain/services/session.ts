@@ -52,6 +52,8 @@ export class SessionService {
 			token,
 			email: account.email,
 		});
+
+		return account;
 	}
 
 	@CatchDecorator()
@@ -98,26 +100,30 @@ export class SessionService {
 
 	@CatchDecorator()
 	async info(): Promise<SessionInfoOutput> {
-		const session = this.context.get("session");
+		try {
+			const session = this.context.get("session");
 
-		if (!session) {
-			throw new ORPCError("UNAUTHORIZED", {
-				message: "No active session found",
-			});
+			if (!session) {
+				return {
+					authenticated: false,
+					session: null,
+				};
+			}
+
+			const account = await this.isAuthenticated();
+
+			return {
+				authenticated: true,
+				session: {
+					email: account.email,
+					token: session.token,
+				},
+			};
+		} catch {
+			return {
+				authenticated: false,
+				session: null,
+			};
 		}
-
-		const account = await this.accountRepository.findByEmail(session.email);
-
-		if (!account) {
-			throw new ORPCError("UNAUTHORIZED", {
-				message: "Account associated with the session not found",
-			});
-		}
-
-		return {
-			accountId: account.id,
-			email: account.email,
-			token: session.token,
-		};
 	}
 }

@@ -1,7 +1,7 @@
-import { isAuthenticatedProcedure } from "@/presentation/procedures/isAuthenticated";
+import { publicProcedure } from "@/presentation/procedures/public";
 import { SessionInfoSchema } from "./schema";
 
-export const infoRoute = isAuthenticatedProcedure
+export const infoRoute = publicProcedure
 	.route({
 		method: "POST",
 		path: "/info",
