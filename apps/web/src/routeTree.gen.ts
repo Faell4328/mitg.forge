@@ -12,12 +12,18 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
+import { Route as Not_authRouteRouteImport } from './routes/_not_auth/route'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 
 const PublicTermsIndexLazyRouteImport = createFileRoute('/_public/terms/')()
+const Not_authLoginIndexLazyRouteImport = createFileRoute('/_not_auth/login/')()
 
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Not_authRouteRoute = Not_authRouteRouteImport.update({
+  id: '/_not_auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
@@ -32,30 +38,48 @@ const PublicTermsIndexLazyRoute = PublicTermsIndexLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_public/terms/index.lazy').then((d) => d.Route),
 )
+const Not_authLoginIndexLazyRoute = Not_authLoginIndexLazyRouteImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => Not_authRouteRoute,
+} as any).lazy(() =>
+  import('./routes/_not_auth/login/index.lazy').then((d) => d.Route),
+)
 
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
+  '/login': typeof Not_authLoginIndexLazyRoute
   '/terms': typeof PublicTermsIndexLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
+  '/login': typeof Not_authLoginIndexLazyRoute
   '/terms': typeof PublicTermsIndexLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_not_auth': typeof Not_authRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
   '/_public/': typeof PublicIndexRoute
+  '/_not_auth/login/': typeof Not_authLoginIndexLazyRoute
   '/_public/terms/': typeof PublicTermsIndexLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/terms'
+  fullPaths: '/' | '/login' | '/terms'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/terms'
-  id: '__root__' | '/_public' | '/_public/' | '/_public/terms/'
+  to: '/' | '/login' | '/terms'
+  id:
+    | '__root__'
+    | '/_not_auth'
+    | '/_public'
+    | '/_public/'
+    | '/_not_auth/login/'
+    | '/_public/terms/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  Not_authRouteRoute: typeof Not_authRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
 }
 
@@ -66,6 +90,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: ''
       preLoaderRoute: typeof PublicRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_not_auth': {
+      id: '/_not_auth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof Not_authRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public/': {
@@ -82,8 +113,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicTermsIndexLazyRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_not_auth/login/': {
+      id: '/_not_auth/login/'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof Not_authLoginIndexLazyRouteImport
+      parentRoute: typeof Not_authRouteRoute
+    }
   }
 }
+
+interface Not_authRouteRouteChildren {
+  Not_authLoginIndexLazyRoute: typeof Not_authLoginIndexLazyRoute
+}
+
+const Not_authRouteRouteChildren: Not_authRouteRouteChildren = {
+  Not_authLoginIndexLazyRoute: Not_authLoginIndexLazyRoute,
+}
+
+const Not_authRouteRouteWithChildren = Not_authRouteRoute._addFileChildren(
+  Not_authRouteRouteChildren,
+)
 
 interface PublicRouteRouteChildren {
   PublicIndexRoute: typeof PublicIndexRoute
@@ -100,6 +150,7 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  Not_authRouteRoute: Not_authRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport

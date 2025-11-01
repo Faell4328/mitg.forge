@@ -6,7 +6,7 @@ export const BoxLogin = () => {
 	return (
 		<div>
 			<Link
-				to="/terms"
+				to="/"
 				className="-right-0.5 absolute top-[-155px] flex w-full items-center"
 			>
 				<img
@@ -16,7 +16,7 @@ export const BoxLogin = () => {
 			</Link>
 			<MenuBox background chains>
 				<div className="flex flex-col items-center gap-1">
-					<ButtonLink to="/">Login</ButtonLink>
+					<ButtonLink to="/login">Login</ButtonLink>
 					<Link to="/" className="fondamento-title text-xs hover:underline">
 						Create Account
 					</Link>
