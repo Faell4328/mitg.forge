@@ -13,7 +13,9 @@
 		"changeset:status": "changeset status --verbose",
 		"changeset:version": "changeset version",
 		"changeset:tag": "changeset tag",
-		"postinstall": "pnpm dlx sherif@latest -f",
+		"sherif": "sherif",
+		"sherif:fix": "sherif -f",
+		"postinstall": "pnpm run sherif",
 		"prepare": "husky"
 	},
 	"keywords": [],
@@ -29,6 +31,7 @@
 		"cz-conventional-changelog": "^3.3.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.2.5",
+		"sherif": "^1.8.0",
 		"turbo": "^2.5.8"
 	},
 	"config": {
