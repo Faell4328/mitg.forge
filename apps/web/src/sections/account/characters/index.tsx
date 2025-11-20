@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { PlayerStatusHidden } from "@/components/Player/Hidden";
 import { PlayerMain } from "@/components/Player/Main";
@@ -5,17 +6,35 @@ import { PlayerIsOnline } from "@/components/Player/Online";
 import { PlayerRewardCollected } from "@/components/Player/RewardCollected";
 import { PlayerRole } from "@/components/Player/Role";
 import { PlayerVocation } from "@/components/Player/Vocation";
+import { useTimezone } from "@/sdk/hooks/useTimezone";
+import { api } from "@/sdk/lib/api/factory";
+import { cn } from "@/sdk/utils/cn";
 import { makeOutfit } from "@/sdk/utils/outfit";
-import { ButtonLink } from "@/ui/Buttons/ButtonLink";
+import { ButtonImageLink } from "@/ui/Buttons/ButtonImageLink";
 import { Container } from "@/ui/Container";
 import { InnerContainer } from "@/ui/Container/Inner";
-import type { AccountSectionDetails } from "..";
 
-export const AccountCharacters = ({
-	characters,
-}: {
-	characters: AccountSectionDetails["characters"];
-}) => {
+/**
+ * TODO: The limit of possible characters per account will be bellow of 99.
+ * This should't be a problem, but wee can make a better implementation of this.
+ * Using a config value from env or something similar.
+ *
+ * TODO: Remembering that query is been prefetched on route loader. In the future, maybe implement
+ * a skeleton to simulate a loading state while data is been fetched.
+ */
+export const AccountCharacters = () => {
+	const { formatDate } = useTimezone();
+	const { data } = useQuery(
+		api.query.miforge.accounts.characters.list.queryOptions({
+			input: {
+				page: 1,
+				limit: 99,
+			},
+		}),
+	);
+
+	const characters = data?.results ?? [];
+
 	return (
 		<Container title="Characters">
 			<InnerContainer className="flex justify-center p-0">
@@ -42,6 +61,8 @@ export const AccountCharacters = ({
 					</thead>
 					<tbody>
 						{characters.map((character, index) => {
+							const hasDeletionScheduled = !!character.deletion;
+
 							return (
 								<tr key={`${character.id}-${character.name}`}>
 									<td className="border border-septenary p-1 text-center">
@@ -71,25 +92,34 @@ export const AccountCharacters = ({
 													<span className="font-bold text-lg text-secondary">
 														{character.name}
 													</span>
-													<PlayerMain />
+													{character.ismain && <PlayerMain />}
 												</div>
-
 												<span className="flex flex-row items-center gap-1 text-secondary text-xs">
 													Level {character.level} - on Ferumbra
 												</span>
+												{hasDeletionScheduled && character?.deletion && (
+													<span className="text-error text-xs">
+														Deletion scheduled on{" "}
+														{formatDate(character.deletion)}.
+													</span>
+												)}
 											</div>
 										</div>
 									</td>
 									<td className="hidden border border-septenary p-1 md:table-cell">
 										<div className="flex w-full justify-center">
-											<PlayerVocation vocation={character.vocation} />
+											<div className="scale-75">
+												<PlayerVocation vocation={character.vocation} />
+											</div>
 										</div>
 									</td>
 									<td className="hidden border border-septenary p-1 text-secondary md:table-cell">
 										<div className="flex flex-row flex-wrap items-center justify-center gap-1">
-											<PlayerRewardCollected collected />
-											<PlayerIsOnline online />
-											<PlayerStatusHidden />
+											<PlayerRewardCollected
+												collected={character.daily_reward_collected}
+											/>
+											<PlayerIsOnline online={character.online} />
+											{character.ishidden && <PlayerStatusHidden />}
 										</div>
 									</td>
 									<td className="border border-septenary p-1">
@@ -97,8 +127,15 @@ export const AccountCharacters = ({
 											<span className="text-secondary text-sm">
 												[
 												<Link
-													to="/"
-													className="font-bold text-blue-900 underline"
+													disabled={hasDeletionScheduled}
+													to="/account/player/$name/edit"
+													params={{
+														name: character.name,
+													}}
+													className={cn("font-bold text-blue-900 underline", {
+														"pointer-events-none opacity-50":
+															hasDeletionScheduled,
+													})}
 												>
 													Edit
 												</Link>
@@ -108,7 +145,11 @@ export const AccountCharacters = ({
 												[
 												<Link
 													to="/"
-													className="font-bold text-blue-900 underline"
+													disabled={hasDeletionScheduled}
+													className={cn("font-bold text-blue-900 underline", {
+														"pointer-events-none opacity-50":
+															hasDeletionScheduled,
+													})}
 												>
 													Delete
 												</Link>
@@ -123,12 +164,12 @@ export const AccountCharacters = ({
 				</table>
 			</InnerContainer>
 			<div className="flex w-full flex-wrap justify-end gap-2">
-				<ButtonLink variant="green" to="/">
+				<ButtonImageLink variant="green" to="/">
 					Change Main
-				</ButtonLink>
-				<ButtonLink variant="info" to="/">
+				</ButtonImageLink>
+				<ButtonImageLink variant="info" to="/account/player/create">
 					Create Character
-				</ButtonLink>
+				</ButtonImageLink>
 			</div>
 		</Container>
 	);

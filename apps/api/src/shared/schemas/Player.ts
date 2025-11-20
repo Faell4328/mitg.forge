@@ -1,6 +1,17 @@
 import z from "zod";
-import { unixTimestampToDate } from "@/utils/date";
-import { getPlayerRole, getVocationName } from "@/utils/player";
+import { unixTimestampToDate } from "@/shared/utils/date";
+import { getPlayerRole, getVocationName } from "@/shared/utils/player";
+
+const WeaponPerk = z.object({
+	proficiency_level: z.number(),
+	perk_position: z.number(),
+});
+
+const WeaponProficiency = z.object({
+	item_id: z.number(),
+	experience: z.number(),
+	active_perks: z.array(WeaponPerk),
+});
 
 export const PlayerSchema = z.object({
 	id: z.number(),
@@ -46,7 +57,7 @@ export const PlayerSchema = z.object({
 	blessings7: z.number(),
 	blessings8: z.number(),
 	onlinetime: z.number(), // in seconds
-	deletion: z.bigint(),
+	deletion: z.bigint().transform(unixTimestampToDate),
 	balance: z.bigint(),
 	offlinetraining_time: z.number(), // is in seconds
 	stamina: z.number(), // is in minutes
@@ -82,12 +93,16 @@ export const PlayerSchema = z.object({
 	skill_lifeleech_amount: z.bigint(),
 	skill_manaleech_chance: z.bigint(),
 	skill_manaleech_amount: z.bigint(),
+	proficiencies: z.array(WeaponProficiency),
 	manashield: z.number(),
 	max_manashield: z.number(),
 	xpboost_stamina: z.number().nullable(), // is in seconds
 	xpboost_value: z.number().nullable(), // how much percent
 	marriage_status: z.bigint(),
 	marriage_spouse: z.number(),
+	ismain: z.boolean(),
+	ishidden: z.boolean(),
+	comment: z.string().nullable(),
 	bonus_rerolls: z.bigint(),
 	prey_wildcard: z.bigint(),
 	task_points: z.bigint(),
