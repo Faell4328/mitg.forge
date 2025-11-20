@@ -22,17 +22,17 @@
 	"dependencies": {
 		"@miforge/core": "workspace:*",
 		"@miforge/email": "workspace:*",
-		"@orpc/client": "^1.11.1",
-		"@orpc/json-schema": "^1.11.1",
-		"@orpc/openapi": "^1.11.1",
-		"@orpc/server": "^1.11.1",
-		"@orpc/zod": "^1.11.1",
+		"@orpc/client": "^1.11.3",
+		"@orpc/json-schema": "^1.11.3",
+		"@orpc/openapi": "^1.11.3",
+		"@orpc/server": "^1.11.3",
+		"@orpc/zod": "^1.11.3",
 		"@prisma/adapter-mariadb": "^6.19.0",
 		"@prisma/client": "^6.19.0",
-		"bullmq": "^5.63.0",
+		"bullmq": "^5.63.2",
 		"dotenv-flow": "^4.1.0",
 		"envalid": "^8.1.1",
-		"hono": "^4.10.4",
+		"hono": "^4.10.6",
 		"ioredis": "^5.8.2",
 		"jsonwebtoken": "^9.0.2",
 		"nodemailer": "^7.0.10",
@@ -45,7 +45,7 @@
 	"devDependencies": {
 		"@types/bun": "catalog:",
 		"@types/jsonwebtoken": "^9.0.10",
-		"@types/nodemailer": "^7.0.3",
+		"@types/nodemailer": "^7.0.4",
 		"@types/react": "catalog:react",
 		"@types/react-dom": "catalog:react",
 		"prisma": "^6.19.0",
@@ -53,5 +53,5 @@
 		"tsdown": "catalog:",
 		"typescript": "catalog:ts"
 	},
-	"packageManager": "pnpm@10.18.3"
+	"packageManager": "pnpm@10.22.0"
 }
