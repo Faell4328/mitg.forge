@@ -78,6 +78,16 @@ export class AccountsService {
 			email: data.email,
 		});
 
+		this.emailQueue.add({
+			kind: "EmailJob",
+			to: newAccount.email,
+			props: {
+				email: newAccount.email,
+			},
+			subject: "Welcome to Miforge!",
+			template: "AccountCreated",
+		});
+
 		return newAccount;
 	}
 
@@ -91,8 +101,8 @@ export class AccountsService {
 
 		if (!account) {
 			this.logger.warn(`Login failed for email: ${email} - account not found.`);
-			throw new ORPCError("NOT_FOUND", {
-				message: "Account not found",
+			throw new ORPCError("UNAUTHORIZED", {
+				message: "Invalid credentials",
 			});
 		}
 

@@ -5,8 +5,17 @@ export const AccountCreateContractSchema = {
 		.object({
 			name: z.string().min(3).max(30).optional(),
 			email: z.email(),
-			password: z.string().min(8).max(100),
-			confirmPassword: z.string().min(8).max(100),
+			password: z
+				.string()
+				.min(8)
+				.max(100)
+				.regex(/[A-Z]/, {
+					message: "Password must contain at least one uppercase letter",
+				})
+				.regex(/[\W_]/, {
+					message: "Password must contain at least one special character",
+				}),
+			confirmPassword: z.string().max(100),
 		})
 		.superRefine(({ confirmPassword, password }, ctx) => {
 			if (confirmPassword === password) return;
