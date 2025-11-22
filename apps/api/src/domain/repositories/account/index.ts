@@ -1,11 +1,21 @@
 import { inject, injectable } from "tsyringe";
 import type { Prisma } from "@/domain/clients";
 import { TOKENS } from "@/infra/di/tokens";
+import { getAccountTypeId } from "@/shared/utils/account/type";
 import type { PaginationInput } from "@/shared/utils/paginate";
 
 @injectable()
 export class AccountRepository {
 	constructor(@inject(TOKENS.Prisma) private readonly prisma: Prisma) {}
+
+	create(data: { name?: string; password: string; email: string }) {
+		return this.prisma.accounts.create({
+			data: {
+				...data,
+				type: getAccountTypeId("PLAYER"),
+			},
+		});
+	}
 
 	async findByToken(token: string) {
 		return this.prisma.accounts.findFirst({
@@ -20,7 +30,7 @@ export class AccountRepository {
 	}
 
 	async findByEmail(email: string) {
-		return this.prisma.accounts.findFirst({
+		return this.prisma.accounts.findUnique({
 			where: {
 				email,
 			},
