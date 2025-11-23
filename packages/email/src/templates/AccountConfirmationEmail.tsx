@@ -7,9 +7,9 @@ import {
 	Text,
 } from "@react-email/components";
 
-type AccountConfirmationEmailProps = {
+type AccountConfirmationEmailProps = Readonly<{
 	token: string;
-};
+}>;
 
 export function AccountConfirmationEmail({
 	token,
