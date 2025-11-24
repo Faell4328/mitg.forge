@@ -18,6 +18,7 @@ export class AccountConfirmationsService {
 			max_attempts: number;
 			attempts: number;
 			expires_at: Date;
+			cancelled_at: Date | null;
 			token: string;
 		} | null,
 		token?: string,
@@ -25,6 +26,14 @@ export class AccountConfirmationsService {
 		if (!confirmation || !token) {
 			throw new ORPCError("NOT_FOUND", {
 				message: "No confirmation request found",
+			});
+		}
+
+		const isCancelled = confirmation.cancelled_at !== null;
+
+		if (isCancelled) {
+			throw new ORPCError("FORBIDDEN", {
+				message: "Confirmation request has been cancelled",
 			});
 		}
 
@@ -49,11 +58,18 @@ export class AccountConfirmationsService {
 		if (confirmation.token !== token) {
 			await this.accountConfirmationsRepository.update(confirmation.id, {
 				attempts: actualAttempts,
+				lastAttemptAt: new Date(),
 			});
 
 			throw new ORPCError("UNAUTHORIZED", {
 				message: "Invalid confirmation token",
 			});
 		}
+
+		await this.accountConfirmationsRepository.update(confirmation.id, {
+			confirmedAt: new Date(),
+			attempts: actualAttempts,
+			lastAttemptAt: new Date(),
+		});
 	}
 }

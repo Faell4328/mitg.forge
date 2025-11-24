@@ -80,6 +80,7 @@ export class AccountConfirmationsRepository {
 		data: {
 			confirmedAt?: Date;
 			cancelledAt?: Date;
+			lastAttemptAt?: Date;
 			attempts?: number;
 		},
 	) {
@@ -88,6 +89,7 @@ export class AccountConfirmationsRepository {
 				id,
 			},
 			data: {
+				last_attempt_at: data.lastAttemptAt,
 				cancelled_at: data.cancelledAt,
 				confirmed_at: data.confirmedAt,
 				attempts: data.attempts,
