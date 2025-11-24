@@ -19,6 +19,7 @@ export class AccountConfirmationsService {
 			attempts: number;
 			expires_at: Date;
 			cancelled_at: Date | null;
+			confirmed_at: Date | null;
 			token: string;
 		} | null,
 		token?: string,
@@ -26,6 +27,14 @@ export class AccountConfirmationsService {
 		if (!confirmation || !token) {
 			throw new ORPCError("NOT_FOUND", {
 				message: "No confirmation request found",
+			});
+		}
+
+		const isConfirmed = confirmation.confirmed_at !== null;
+
+		if (isConfirmed) {
+			throw new ORPCError("FORBIDDEN", {
+				message: "Confirmation request has already been confirmed",
 			});
 		}
 
@@ -42,6 +51,12 @@ export class AccountConfirmationsService {
 		const actualAttempts = previousAttempts + 1;
 
 		if (actualAttempts > maxAttempts) {
+			await this.accountConfirmationsRepository.update(confirmation.id, {
+				cancelledAt: new Date(),
+				attempts: actualAttempts,
+				lastAttemptAt: new Date(),
+			});
+
 			throw new ORPCError("FORBIDDEN", {
 				message: "Maximum confirmation attempts exceeded",
 			});
