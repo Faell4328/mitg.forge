@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { passwordSchema, simplePasswordSchema } from "@miforge/core/schemas";
 import { ORPCError } from "@orpc/client";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -24,17 +25,8 @@ import { Input } from "@/ui/Input";
 import { Textarea } from "@/ui/Textarea";
 
 const BaseSchema = z.object({
-	newPassword: z
-		.string()
-		.min(8)
-		.max(100)
-		.regex(/[A-Z]/, {
-			message: "Password must contain at least one uppercase letter",
-		})
-		.regex(/[\W_]/, {
-			message: "Password must contain at least one special character",
-		}),
-	confirmNewPassword: z.string().max(100),
+	newPassword: passwordSchema,
+	confirmNewPassword: passwordSchema,
 });
 
 const FormSchemaWithCode = z.object({
@@ -44,7 +36,7 @@ const FormSchemaWithCode = z.object({
 
 const FormSchemaWithoutCode = z.object({
 	...BaseSchema.shape,
-	oldPassword: z.string().max(100),
+	oldPassword: simplePasswordSchema,
 });
 
 type FormValuesWithCode = z.infer<typeof FormSchemaWithCode>;

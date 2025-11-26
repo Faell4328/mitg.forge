@@ -1,30 +1,14 @@
+import { passwordSchema, simplePasswordSchema } from "@miforge/core/schemas";
 import z from "zod";
 
 export const ChangePasswordWithOldContractSchema = {
 	input: z
 		.object({
-			oldPassword: z.string().max(100),
-			newPassword: z
-				.string()
-				.min(8)
-				.max(100)
-				.regex(/[A-Z]/, {
-					message: "Password must contain at least one uppercase letter",
-				})
-				.regex(/[\W_]/, {
-					message: "Password must contain at least one special character",
-				}),
-			confirmPassword: z.string().max(100),
+			oldPassword: simplePasswordSchema,
+			newPassword: passwordSchema,
+			confirmPassword: passwordSchema,
 		})
 		.superRefine(({ confirmPassword, newPassword, oldPassword }, ctx) => {
-			if (confirmPassword === newPassword) return;
-
-			ctx.addIssue({
-				code: "custom",
-				message: "New password and confirm password do not match",
-				path: ["confirmPassword"],
-			});
-
 			if (oldPassword === newPassword) {
 				ctx.addIssue({
 					code: "custom",
@@ -32,6 +16,14 @@ export const ChangePasswordWithOldContractSchema = {
 					path: ["newPassword"],
 				});
 			}
+
+			if (confirmPassword === newPassword) return;
+
+			ctx.addIssue({
+				code: "custom",
+				message: "New password and confirm password do not match",
+				path: ["confirmPassword"],
+			});
 		}),
 	output: z.void(),
 };

@@ -1,20 +1,12 @@
+import { passwordSchema } from "@miforge/core/schemas";
 import z from "zod";
 
 export const ChangePasswordWithTokenContractSchema = {
 	input: z
 		.object({
 			token: z.string().max(100),
-			newPassword: z
-				.string()
-				.min(8)
-				.max(100)
-				.regex(/[A-Z]/, {
-					message: "Password must contain at least one uppercase letter",
-				})
-				.regex(/[\W_]/, {
-					message: "Password must contain at least one special character",
-				}),
-			confirmPassword: z.string().max(100),
+			newPassword: passwordSchema,
+			confirmPassword: passwordSchema,
 		})
 		.superRefine(({ confirmPassword, newPassword }, ctx) => {
 			if (confirmPassword === newPassword) return;

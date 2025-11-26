@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { simplePasswordSchema } from "@miforge/core/schemas";
 import { ORPCError } from "@orpc/client";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
@@ -26,7 +27,7 @@ import { Separator } from "@/ui/Separator";
 
 const FormSchema = z.object({
 	email: z.email(),
-	password: z.string().min(1, "Password is required"),
+	password: simplePasswordSchema,
 });
 
 type FormValues = z.infer<typeof FormSchema>;
