@@ -9,12 +9,15 @@ import {
 	AccountDetailsBySessionUseCase,
 	AccountEditCharacterUseCase,
 	AccountFindCharacterUseCase,
+	AccountGeneratePasswordResetUseCase,
 	AccountLoginUseCase,
 	AccountLogoutUseCase,
 	AccountPermissionedUseCase,
 	AccountRegistrationUseCase,
 	AccountStoreHistoryUseCase,
 	AuditAccountUseCase,
+	ChangePasswordWithOldUseCase,
+	ChangePasswordWithTokenUseCase,
 	ConfigInfoUseCase,
 	ConfigUpdateUseCase,
 	SessionAuthenticatedUseCase,
@@ -94,6 +97,21 @@ export function registerUseCases() {
 	container.register(
 		TOKENS.AccountConfirmEmailUseCase,
 		{ useClass: AccountConfirmEmailUseCase },
+		{ lifecycle: Lifecycle.ResolutionScoped },
+	);
+	container.register(
+		TOKENS.AccountChangePasswordWithOldUseCase,
+		{ useClass: ChangePasswordWithOldUseCase },
+		{ lifecycle: Lifecycle.ResolutionScoped },
+	);
+	container.register(
+		TOKENS.AccountGeneratePasswordResetUseCase,
+		{ useClass: AccountGeneratePasswordResetUseCase },
+		{ lifecycle: Lifecycle.ResolutionScoped },
+	);
+	container.register(
+		TOKENS.AccountChangePasswordWithTokenUseCase,
+		{ useClass: ChangePasswordWithTokenUseCase },
 		{ lifecycle: Lifecycle.ResolutionScoped },
 	);
 

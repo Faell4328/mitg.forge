@@ -55,6 +55,15 @@ export class UseCasesFactory {
 		);
 		const auditHistory = this.di.resolve(TOKENS.AccountAuditUseCase);
 		const confirmEmail = this.di.resolve(TOKENS.AccountConfirmEmailUseCase);
+		const changePasswordWithOld = this.di.resolve(
+			TOKENS.AccountChangePasswordWithOldUseCase,
+		);
+		const generatePasswordReset = this.di.resolve(
+			TOKENS.AccountGeneratePasswordResetUseCase,
+		);
+		const changePasswordWithToken = this.di.resolve(
+			TOKENS.AccountChangePasswordWithTokenUseCase,
+		);
 
 		return {
 			create,
@@ -72,6 +81,9 @@ export class UseCasesFactory {
 			cancelDeleteCharacter,
 			auditHistory,
 			confirmEmail,
+			changePasswordWithOld,
+			generatePasswordReset,
+			changePasswordWithToken,
 		} as const;
 	}
 

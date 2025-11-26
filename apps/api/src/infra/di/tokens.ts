@@ -19,12 +19,15 @@ import type {
 	AccountDetailsBySessionUseCase,
 	AccountEditCharacterUseCase,
 	AccountFindCharacterUseCase,
+	AccountGeneratePasswordResetUseCase,
 	AccountLoginUseCase,
 	AccountLogoutUseCase,
 	AccountPermissionedUseCase,
 	AccountRegistrationUseCase,
 	AccountStoreHistoryUseCase,
 	AuditAccountUseCase,
+	ChangePasswordWithOldUseCase,
+	ChangePasswordWithTokenUseCase,
 	ConfigInfoUseCase,
 	ConfigUpdateUseCase,
 	SessionAuthenticatedUseCase,
@@ -169,6 +172,16 @@ export const TOKENS = {
 	AccountCreateUseCase: token<AccountCreateUseCase>("AccountCreateUseCase"),
 	AccountConfirmEmailUseCase: token<AccountConfirmEmailUseCase>(
 		"AccountConfirmEmailUseCase",
+	),
+	AccountChangePasswordWithOldUseCase: token<ChangePasswordWithOldUseCase>(
+		"AccountChangePasswordWithOldUseCase",
+	),
+	AccountGeneratePasswordResetUseCase:
+		token<AccountGeneratePasswordResetUseCase>(
+			"AccountGeneratePasswordResetUseCase",
+		),
+	AccountChangePasswordWithTokenUseCase: token<ChangePasswordWithTokenUseCase>(
+		"AccountChangePasswordWithTokenUseCase",
 	),
 
 	WorldsListUseCase: token<WorldsListUseCase>("WorldsListUseCase"),

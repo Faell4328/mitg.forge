@@ -306,6 +306,9 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      zod:
+        specifier: 'catalog:'
+        version: 4.1.12
 
   packages/email:
     dependencies:

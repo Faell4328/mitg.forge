@@ -15,6 +15,7 @@ import type {
 import type {
 	AccountConfirmationsRepository,
 	AccountRepository,
+	AuditRepository,
 	ConfigRepository,
 	PlayersRepository,
 	SessionRepository,
@@ -67,6 +68,8 @@ export class AccountsService {
 		@inject(TOKENS.RandomCode) private readonly randomCode: RandomCode,
 		@inject(TOKENS.AccountConfirmationsService)
 		private readonly accountConfirmationsService: AccountConfirmationsService,
+		@inject(TOKENS.AuditRepository)
+		private readonly auditRepository: AuditRepository,
 	) {}
 
 	@Catch()
@@ -712,5 +715,190 @@ export class AccountsService {
 		return {
 			scheduleDate: deletionDate,
 		};
+	}
+
+	@Catch()
+	async changePasswordWithOld({
+		oldPassword,
+		newPassword,
+	}: {
+		oldPassword: string;
+		newPassword: string;
+	}) {
+		const config = await this.configRepository.findConfig();
+
+		if (config.account.passwordResetConfirmationRequired) {
+			throw new ORPCError("FORBIDDEN", {
+				message:
+					"Changing password with old password is disabled when password reset confirmation is required. Please use the password reset flow.",
+			});
+		}
+
+		const session = this.metadata.session();
+
+		const account = await this.accountRepository.findByEmail(session.email);
+
+		if (!account) {
+			throw new ORPCError("NOT_FOUND", {
+				message: "Account not found",
+			});
+		}
+
+		const isOldPasswordValid = this.hasherCrypto.compare(
+			oldPassword,
+			account.password,
+		);
+
+		if (!isOldPasswordValid) {
+			throw new ORPCError("UNAUTHORIZED", {
+				message: "Invalid credentials",
+			});
+		}
+
+		const hashedNewPassword = this.hasherCrypto.hash(newPassword);
+
+		await this.accountRepository.updatePassword(account.id, hashedNewPassword);
+
+		await this.auditRepository.createAudit("CHANGED_PASSWORD_WITH_OLD", {
+			details: "Password changed using old password for account",
+			success: true,
+		});
+
+		this.emailQueue.add({
+			kind: "EmailJob",
+			template: "AccountChangePasswordWithOld",
+			props: {},
+			subject: "Your password has been changed",
+			to: account.email,
+		});
+	}
+
+	@Catch()
+	async generatePasswordReset() {
+		const config = await this.configRepository.findConfig();
+
+		if (!config.account.passwordResetConfirmationRequired) {
+			throw new ORPCError("FORBIDDEN", {
+				message:
+					"Password reset confirmation is disabled. Please use the change password with old password flow.",
+			});
+		}
+
+		const session = this.metadata.session();
+
+		const account = await this.accountRepository.findByEmail(session.email);
+
+		if (!account) {
+			throw new ORPCError("NOT_FOUND", {
+				message: "Account not found",
+			});
+		}
+
+		const resetToken = this.randomCode.generate(24, "HASH");
+
+		const expiresAt = new Date();
+		expiresAt.setMinutes(expiresAt.getMinutes() + 30);
+
+		/**
+		 * This check already considers unexpired confirmations only.
+		 */
+		const alreadyHasResetActive =
+			await this.accountConfirmationsRepository.findByAccountAndType(
+				account.id,
+				"PASSWORD_RESET",
+			);
+
+		if (alreadyHasResetActive) {
+			throw new ORPCError("CONFLICT", {
+				message:
+					"A password reset is already active for this account. Please check your email or wait until it expires.",
+			});
+		}
+
+		await this.accountConfirmationsRepository.create(account.id, {
+			channel: "CODE",
+			expiresAt,
+			token: resetToken,
+			type: "PASSWORD_RESET",
+		});
+
+		this.emailQueue.add({
+			kind: "EmailJob",
+			template: "AccountChangePasswordCode",
+			props: {
+				token: resetToken,
+			},
+			subject: "Password Reset Request",
+			to: account.email,
+		});
+	}
+
+	@Catch()
+	async changePasswordWithToken({
+		newPassword,
+		token,
+	}: {
+		token: string;
+		newPassword: string;
+	}) {
+		const config = await this.configRepository.findConfig();
+
+		if (!config.account.passwordResetConfirmationRequired) {
+			throw new ORPCError("FORBIDDEN", {
+				message:
+					"Password reset confirmation is disabled. Please use the change password with old password flow.",
+			});
+		}
+
+		const session = this.metadata.session();
+
+		const account = await this.accountRepository.findByEmail(session.email);
+
+		if (!account) {
+			throw new ORPCError("NOT_FOUND", {
+				message: "Account not found",
+			});
+		}
+
+		const oldPassword = account.password;
+
+		const isNewPasswordSameAsOld = this.hasherCrypto.compare(
+			newPassword,
+			oldPassword,
+		);
+
+		if (isNewPasswordSameAsOld) {
+			throw new ORPCError("UNPROCESSABLE_CONTENT", {
+				message: "New password must be different from old password",
+			});
+		}
+
+		const confirmation =
+			await this.accountConfirmationsRepository.findByAccountAndType(
+				account.id,
+				"PASSWORD_RESET",
+			);
+
+		await this.accountConfirmationsService.verifyConfirmation(
+			confirmation,
+			token,
+		);
+
+		const hashedNewPassword = this.hasherCrypto.hash(newPassword);
+
+		await this.accountRepository.updatePassword(account.id, hashedNewPassword);
+
+		await this.auditRepository.createAudit("RESET_PASSWORD_WITH_TOKEN", {
+			details: "Password reset using confirmation token for account",
+			success: true,
+		});
+
+		this.emailQueue.add({
+			kind: "EmailJob",
+			template: "AccountPasswordChanged",
+			props: {},
+			subject: "Your password has been changed",
+			to: account.email,
+		});
 	}
 }
