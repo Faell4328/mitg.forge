@@ -64,6 +64,7 @@ export class UseCasesFactory {
 		const changePasswordWithToken = this.di.resolve(
 			TOKENS.AccountChangePasswordWithTokenUseCase,
 		);
+		const listAccounts = this.di.resolve(TOKENS.ListAccountsUseCase);
 
 		return {
 			create,
@@ -84,6 +85,7 @@ export class UseCasesFactory {
 			changePasswordWithOld,
 			generatePasswordReset,
 			changePasswordWithToken,
+			listAccounts,
 		} as const;
 	}
 

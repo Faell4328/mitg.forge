@@ -470,6 +470,10 @@ export class AccountsService {
 			pagination,
 		});
 	}
+	@Catch()
+	async listAccounts({ pagination }: { pagination: PaginationInput }) {
+		return this.accountRepository.listAccounts({ pagination });
+	}
 
 	@Catch()
 	async upsertRegistration(
