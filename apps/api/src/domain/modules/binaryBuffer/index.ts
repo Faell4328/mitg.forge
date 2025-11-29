@@ -72,9 +72,7 @@ export class BinaryBuffer {
 
 	getString(length?: number): Buffer {
 		let len = length;
-		if (len === undefined) {
-			len = this.getShort();
-		}
+		len ??= this.getShort();
 
 		this.ensure(len);
 		const value = this.buffer.subarray(this.pos, this.pos + len);
