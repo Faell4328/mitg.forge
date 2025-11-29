@@ -16,6 +16,16 @@ import type { WorldsListUseCase } from "./worlds/list";
 export class UseCasesFactory {
 	constructor(private readonly di: DependencyContainer) {}
 
+	get lostAccount() {
+		const findByEmailOrCharacterName = this.di.resolve(
+			TOKENS.LostAccountFindByEmailOrCharacterNameUseCase,
+		);
+
+		return {
+			findByEmailOrCharacterName,
+		} as const;
+	}
+
 	get account() {
 		const create = this.di.resolve(TOKENS.AccountCreateUseCase);
 		const login = this.di.resolve<AccountLoginUseCase>(

@@ -82,6 +82,18 @@ export class AccountRepository {
 		});
 	}
 
+	async findByCharacterName(name: string) {
+		return this.prisma.accounts.findFirst({
+			where: {
+				players: {
+					some: {
+						name,
+					},
+				},
+			},
+		});
+	}
+
 	async findByEmail(email: string) {
 		return this.prisma.accounts.findUnique({
 			where: {

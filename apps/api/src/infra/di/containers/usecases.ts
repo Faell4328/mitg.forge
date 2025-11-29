@@ -24,6 +24,7 @@ import {
 	ChangePasswordWithTokenUseCase,
 	ConfigInfoUseCase,
 	ConfigUpdateUseCase,
+	LostAccountFindByEmailOrCharacterNameUseCase,
 	SessionAuthenticatedUseCase,
 	SessionInfoUseCase,
 	SessionNotAuthenticatedUseCase,
@@ -163,6 +164,12 @@ export function registerUseCases() {
 	container.register(
 		TOKENS.WorldsListUseCase,
 		{ useClass: WorldsListUseCase },
+		{ lifecycle: Lifecycle.ResolutionScoped },
+	);
+
+	container.register(
+		TOKENS.LostAccountFindByEmailOrCharacterNameUseCase,
+		{ useClass: LostAccountFindByEmailOrCharacterNameUseCase },
 		{ lifecycle: Lifecycle.ResolutionScoped },
 	);
 

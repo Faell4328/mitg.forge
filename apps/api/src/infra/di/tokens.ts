@@ -4,6 +4,7 @@ import type {
 	AccountsService,
 	AuditService,
 	ConfigService,
+	LostAccountService,
 	PlayersService,
 	SessionService,
 	TibiaClientService,
@@ -34,6 +35,7 @@ import type {
 	ChangePasswordWithTokenUseCase,
 	ConfigInfoUseCase,
 	ConfigUpdateUseCase,
+	LostAccountFindByEmailOrCharacterNameUseCase,
 	SessionAuthenticatedUseCase,
 	SessionInfoUseCase,
 	SessionNotAuthenticatedUseCase,
@@ -140,6 +142,7 @@ export const TOKENS = {
 	PlayersService: token<PlayersService>("PlayersService"),
 	AuditService: token<AuditService>("AuditService"),
 	ConfigService: token<ConfigService>("ConfigService"),
+	LostAccountService: token<LostAccountService>("LostAccountService"),
 
 	// UseCases
 	AccountLoginUseCase: token<AccountLoginUseCase>("LoginUseCase"),
@@ -203,6 +206,11 @@ export const TOKENS = {
 	AccountConfirmEmailChangeUseCase: token<AccountConfirmEmailChangeUseCase>(
 		"AccountConfirmEmailChangeUseCase",
 	),
+
+	LostAccountFindByEmailOrCharacterNameUseCase:
+		token<LostAccountFindByEmailOrCharacterNameUseCase>(
+			"LostAccountFindByEmailOrCharacterNameUseCase",
+		),
 
 	WorldsListUseCase: token<WorldsListUseCase>("WorldsListUseCase"),
 
