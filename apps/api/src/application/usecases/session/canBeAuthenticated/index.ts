@@ -3,16 +3,16 @@ import type { SessionService } from "@/application/services";
 import { TOKENS } from "@/infra/di/tokens";
 import type { UseCase } from "@/shared/interfaces/usecase";
 import type {
-	SessionAuthenticatedContractInput,
-	SessionAuthenticatedContractOutput,
+	SessionCanBeAuthenticatedContractInput,
+	SessionCanBeAuthenticatedContractOutput,
 } from "./contract";
 
 @injectable()
-export class SessionAuthenticatedUseCase
+export class SessionCanBeAuthenticatedUseCase
 	implements
 		UseCase<
-			SessionAuthenticatedContractInput,
-			SessionAuthenticatedContractOutput
+			SessionCanBeAuthenticatedContractInput,
+			SessionCanBeAuthenticatedContractOutput
 		>
 {
 	constructor(
@@ -20,7 +20,7 @@ export class SessionAuthenticatedUseCase
 		private readonly sessionService: SessionService,
 	) {}
 
-	async execute(): Promise<SessionAuthenticatedContractOutput> {
-		return this.sessionService.setSession();
+	async execute(): Promise<SessionCanBeAuthenticatedContractOutput> {
+		return this.sessionService.setSessionIfExists();
 	}
 }

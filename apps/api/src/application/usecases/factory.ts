@@ -7,6 +7,7 @@ import type { AccountLogoutUseCase } from "./account/logout";
 import type { AccountPermissionedUseCase } from "./account/permissioned";
 import type { AccountRegistrationUseCase } from "./account/registration";
 import type { AccountStoreHistoryUseCase } from "./account/storeHistory";
+import type { SessionCanBeAuthenticatedUseCase } from "./session";
 import type { SessionAuthenticatedUseCase } from "./session/authenticated";
 import type { SessionInfoUseCase } from "./session/info";
 import type { SessionNotAuthenticatedUseCase } from "./session/notAuthenticated";
@@ -149,11 +150,16 @@ export class UseCasesFactory {
 		const notAuthenticated = this.di.resolve<SessionNotAuthenticatedUseCase>(
 			TOKENS.SessionNotAuthenticatedUseCase,
 		);
+		const canBeAuthenticated =
+			this.di.resolve<SessionCanBeAuthenticatedUseCase>(
+				TOKENS.SessionCanBeAuthenticatedUseCase,
+			);
 
 		return {
 			info,
 			authenticated,
 			notAuthenticated,
+			canBeAuthenticated,
 		} as const;
 	}
 

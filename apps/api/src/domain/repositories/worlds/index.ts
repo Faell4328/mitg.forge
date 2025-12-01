@@ -1,7 +1,6 @@
 import type { WorldType } from "generated/client";
 import { inject, injectable } from "tsyringe";
 import type { Prisma } from "@/domain/clients";
-import type { CacheKeys } from "@/domain/modules";
 import { TOKENS } from "@/infra/di/tokens";
 import { mapWithConcurrency } from "@/shared/concurrency";
 import type { OtsServerRepository } from "../otsServer";
@@ -10,8 +9,6 @@ import type { OtsServerRepository } from "../otsServer";
 export class WorldsRepository {
 	constructor(
 		@inject(TOKENS.Prisma) private readonly prisma: Prisma,
-		@inject(TOKENS.Cache) private readonly cache: Cache,
-		@inject(TOKENS.CacheKeys) private readonly cacheKeys: CacheKeys,
 		@inject(TOKENS.OtsServerRepository)
 		private readonly otsServerRepository: OtsServerRepository,
 	) {}

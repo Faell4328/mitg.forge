@@ -3,15 +3,10 @@ import type { Prisma } from "@/domain/clients";
 import { TOKENS } from "@/infra/di/tokens";
 import { getAccountTypeId } from "@/shared/utils/account/type";
 import type { PaginationInput } from "@/shared/utils/paginate";
-import type { AuditRepository } from "../audit";
 
 @injectable()
 export class AccountRepository {
-	constructor(
-		@inject(TOKENS.Prisma) private readonly prisma: Prisma,
-		@inject(TOKENS.AuditRepository)
-		private readonly auditRepository: AuditRepository,
-	) {}
+	constructor(@inject(TOKENS.Prisma) private readonly prisma: Prisma) {}
 
 	updateEmail(accountId: number, email: string) {
 		return this.prisma.accounts.update({
@@ -58,10 +53,6 @@ export class AccountRepository {
 	}
 
 	create(data: { name?: string; password: string; email: string }) {
-		this.auditRepository.createAudit("CREATED_ACCOUNT", {
-			details: `Account created for email: ${data.email}`,
-		});
-
 		return this.prisma.accounts.create({
 			data: {
 				...data,

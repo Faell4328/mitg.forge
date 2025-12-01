@@ -40,6 +40,7 @@ import type {
 	LostAccountResetPasswordWithTokenUseCase,
 	LostAccountVerifyConfirmationTokenUseCase,
 	SessionAuthenticatedUseCase,
+	SessionCanBeAuthenticatedUseCase,
 	SessionInfoUseCase,
 	SessionNotAuthenticatedUseCase,
 	TibiaLoginUseCase,
@@ -47,6 +48,7 @@ import type {
 } from "@/application/usecases";
 import type { Mailer, OtsServerClient, Prisma, Redis } from "@/domain/clients";
 import type { AppLivePublisher } from "@/domain/clients/live/types";
+import type { ExecutionContext } from "@/domain/context";
 import type {
 	Cache,
 	CacheKeys,
@@ -56,7 +58,6 @@ import type {
 	HasherCrypto,
 	JwtCrypto,
 	Logger,
-	Metadata,
 	Pagination,
 	PlayerNameDetection,
 	RandomCode,
@@ -66,6 +67,7 @@ import type {
 } from "@/domain/modules";
 import type {
 	AccountConfirmationsRepository,
+	AccountRegistrationRepository,
 	AccountRepository,
 	AuditRepository,
 	ConfigLiveRepository,
@@ -74,7 +76,6 @@ import type {
 	PlayersRepository,
 	SessionRepository,
 } from "@/domain/repositories";
-import type { AccountRegistrationRepository } from "@/domain/repositories/account/registration";
 import type { WorldsRepository } from "@/domain/repositories/worlds";
 import type { EmailQueue } from "@/jobs/queue/email";
 import type { EmailWorker } from "@/jobs/workers/email";
@@ -83,7 +84,8 @@ export const token = <T>(desc: string) => Symbol(desc) as InjectionToken<T>;
 
 export const TOKENS = {
 	// context
-	Context: token<ReqContext>("Context"),
+	HttpContext: token<HttpContext>("HttpContext"),
+	ExecutionContext: token<ExecutionContext>("ExecutionContext"),
 
 	// Logger
 	Logger: token<Logger>("Logger"),
@@ -106,7 +108,6 @@ export const TOKENS = {
 	EmailWorker: token<EmailWorker>("EmailWorker"),
 
 	// Utils
-	Metadata: token<Metadata>("Metadata"),
 	Cookies: token<Cookies>("Cookies"),
 	Pagination: token<Pagination>("Pagination"),
 	DetectionChanges: token<DetectionChanges>("DetectionChanges"),
@@ -242,6 +243,9 @@ export const TOKENS = {
 	),
 	SessionNotAuthenticatedUseCase: token<SessionNotAuthenticatedUseCase>(
 		"SessionNotAuthenticatedUseCase",
+	),
+	SessionCanBeAuthenticatedUseCase: token<SessionCanBeAuthenticatedUseCase>(
+		"SessionCanBeAuthenticatedUseCase",
 	),
 
 	TibiaLoginUseCase: token<TibiaLoginUseCase>("TibiaLoginUseCase"),
