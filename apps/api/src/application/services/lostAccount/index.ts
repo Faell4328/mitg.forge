@@ -5,12 +5,12 @@ import type { EmailLinks, HasherCrypto } from "@/domain/modules";
 import type {
 	AccountConfirmationsRepository,
 	AccountRepository,
-	AuditRepository,
 	SessionRepository,
 } from "@/domain/repositories";
 import { TOKENS } from "@/infra/di/tokens";
 import type { EmailQueue } from "@/jobs/queue";
 import type { AccountConfirmationsService } from "../accountConfirmations";
+import type { AuditService } from "../audit";
 
 @injectable()
 export class LostAccountService {
@@ -24,8 +24,8 @@ export class LostAccountService {
 		@inject(TOKENS.AccountConfirmationsService)
 		private readonly accountConfirmationsService: AccountConfirmationsService,
 		@inject(TOKENS.HasherCrypto) private readonly hasherCrypto: HasherCrypto,
-		@inject(TOKENS.AuditRepository)
-		private readonly auditRepository: AuditRepository,
+		@inject(TOKENS.AuditService)
+		private readonly auditService: AuditService,
 		@inject(TOKENS.SessionRepository)
 		private readonly sessionRepository: SessionRepository,
 	) {}
@@ -137,7 +137,7 @@ export class LostAccountService {
 
 		await this.sessionRepository.clearAllSessionByAccountId(account.id);
 
-		await this.auditRepository.createAudit("LOST_RESET_PASSWORD_WITH_TOKEN", {
+		await this.auditService.createAudit("LOST_RESET_PASSWORD_WITH_TOKEN", {
 			details: "Password reset using lost account flow. With token generated.",
 			accountId: account.id,
 		});

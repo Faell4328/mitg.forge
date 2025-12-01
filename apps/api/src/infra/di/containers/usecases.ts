@@ -29,6 +29,7 @@ import {
 	LostAccountResetPasswordWithTokenUseCase,
 	LostAccountVerifyConfirmationTokenUseCase,
 	SessionAuthenticatedUseCase,
+	SessionCanBeAuthenticatedUseCase,
 	SessionInfoUseCase,
 	SessionNotAuthenticatedUseCase,
 	TibiaLoginUseCase,
@@ -138,6 +139,14 @@ export function registerUseCases() {
 		{ useClass: SessionNotAuthenticatedUseCase },
 		{ lifecycle: Lifecycle.ResolutionScoped },
 	);
+	container.register(
+		TOKENS.SessionCanBeAuthenticatedUseCase,
+		{
+			useClass: SessionCanBeAuthenticatedUseCase,
+		},
+		{ lifecycle: Lifecycle.ResolutionScoped },
+	);
+
 	container.register(
 		TOKENS.AccountRegistrationUseCase,
 		{ useClass: AccountRegistrationUseCase },

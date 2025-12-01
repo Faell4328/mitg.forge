@@ -7,7 +7,6 @@ import {
 	EmailLinks,
 	HasherCrypto,
 	JwtCrypto,
-	Metadata,
 	Pagination,
 	PlayerNameDetection,
 	RandomCode,
@@ -41,12 +40,6 @@ export function registerModules() {
 		TOKENS.PlayerNameDetection,
 		{ useClass: PlayerNameDetection },
 		{ lifecycle: Lifecycle.Singleton },
-	);
-
-	container.register(
-		TOKENS.Metadata,
-		{ useClass: Metadata },
-		{ lifecycle: Lifecycle.ResolutionScoped },
 	);
 	container.register(
 		TOKENS.Cookies,

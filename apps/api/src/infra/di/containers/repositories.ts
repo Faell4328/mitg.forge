@@ -1,6 +1,7 @@
 import { container, Lifecycle } from "tsyringe";
 import {
 	AccountConfirmationsRepository,
+	AccountRegistrationRepository,
 	AccountRepository,
 	AuditRepository,
 	ConfigLiveRepository,
@@ -9,7 +10,6 @@ import {
 	PlayersRepository,
 	SessionRepository,
 } from "@/domain/repositories";
-import { AccountRegistrationRepository } from "@/domain/repositories/account/registration";
 import { WorldsRepository } from "@/domain/repositories/worlds";
 import { TOKENS } from "../tokens";
 
@@ -66,6 +66,6 @@ export function registerRepositories() {
 	container.register(
 		TOKENS.ConfigLiveRepository,
 		{ useClass: ConfigLiveRepository },
-		{ lifecycle: Lifecycle.Singleton },
+		{ lifecycle: Lifecycle.ResolutionScoped },
 	);
 }

@@ -1,29 +1,24 @@
 import { ORPCError } from "@orpc/client";
-import type { Logger } from "nodemailer/lib/shared";
 import { inject, injectable } from "tsyringe";
 import { Catch } from "@/application/decorators/Catch";
+import type { ExecutionContext } from "@/domain/context";
 import type {
-	Cookies,
 	DetectionChanges,
 	EmailLinks,
 	HasherCrypto,
-	JwtCrypto,
-	Metadata,
 	PlayerNameDetection,
 	RecoveryKey,
 } from "@/domain/modules";
 import type {
 	AccountConfirmationsRepository,
+	AccountRegistrationRepository,
 	AccountRepository,
-	AuditRepository,
 	ConfigRepository,
 	PlayersRepository,
 	SessionRepository,
 } from "@/domain/repositories";
-import type { AccountRegistrationRepository } from "@/domain/repositories/account/registration";
 import type { WorldsRepository } from "@/domain/repositories/worlds";
 import { TOKENS } from "@/infra/di/tokens";
-import { env } from "@/infra/env";
 import type { EmailQueue } from "@/jobs/queue/email";
 import { getAccountType, getAccountTypeId } from "@/shared/utils/account/type";
 import { parseWeaponProficiencies } from "@/shared/utils/game/proficiencies";
@@ -32,23 +27,19 @@ import { getVocationId, type Vocation } from "@/shared/utils/player";
 import { type Gender, getPlayerGenderId } from "@/shared/utils/player/gender";
 import { getSampleName } from "@/shared/utils/player/sample";
 import type { AccountConfirmationsService } from "../accountConfirmations";
-import type { SessionService } from "../session";
+import type { AuditService } from "../audit";
 
 @injectable()
 export class AccountsService {
 	constructor(
-		@inject(TOKENS.Logger) private readonly logger: Logger,
-		@inject(TOKENS.Cookies) private readonly cookies: Cookies,
 		@inject(TOKENS.AccountRepository)
 		private readonly accountRepository: AccountRepository,
 		@inject(TOKENS.SessionRepository)
 		private readonly sessionRepository: SessionRepository,
 		@inject(TOKENS.HasherCrypto)
 		private readonly hasherCrypto: HasherCrypto,
-		@inject(TOKENS.JwtCrypto) private readonly jwtCrypto: JwtCrypto,
-		@inject(TOKENS.SessionService)
-		private readonly sessionService: SessionService,
-		@inject(TOKENS.Metadata) private readonly metadata: Metadata,
+		@inject(TOKENS.ExecutionContext)
+		private readonly executionContext: ExecutionContext,
 		@inject(TOKENS.PlayersRepository)
 		private readonly playersRepository: PlayersRepository,
 		@inject(TOKENS.AccountRegistrationRepository)
@@ -67,8 +58,8 @@ export class AccountsService {
 		private readonly accountConfirmationsRepository: AccountConfirmationsRepository,
 		@inject(TOKENS.AccountConfirmationsService)
 		private readonly accountConfirmationsService: AccountConfirmationsService,
-		@inject(TOKENS.AuditRepository)
-		private readonly auditRepository: AuditRepository,
+		@inject(TOKENS.AuditService)
+		private readonly auditService: AuditService,
 		@inject(TOKENS.EmailLinks) private readonly emailLinks: EmailLinks,
 	) {}
 
@@ -133,6 +124,10 @@ export class AccountsService {
 			email: data.email,
 		});
 
+		this.auditService.createAudit("CREATED_ACCOUNT", {
+			details: `Account created for email: ${data.email}`,
+		});
+
 		/**
 		 * When email confirmation is not required, we can return the new account directly.
 		 * And the frontend can redirect the user to login or call route /login directly.
@@ -177,89 +172,6 @@ export class AccountsService {
 	}
 
 	@Catch()
-	async login({ email, password }: { email: string; password: string }) {
-		/**
-		 * TODO - Implement check for banned accounts to prevent login,
-		 * returning an appropriate error message.
-		 */
-		const account = await this.accountRepository.findByEmail(email);
-		const config = await this.configRepository.findConfig();
-
-		if (!account) {
-			this.logger.warn(`Login failed for email: ${email} - account not found.`);
-			throw new ORPCError("UNAUTHORIZED", {
-				message: "Invalid credentials",
-			});
-		}
-
-		const isPasswordValid = this.hasherCrypto.compare(
-			password,
-			account.password,
-		);
-
-		if (!isPasswordValid) {
-			this.logger.warn(`Login failed for email: ${email} - invalid password.`);
-			throw new ORPCError("UNAUTHORIZED", {
-				message: "Invalid credentials",
-			});
-		}
-
-		/**
-		 * This config is a live config from database, so changes
-		 * will be reflected without server restarts.
-		 */
-		if (!account.email_confirmed && config.account.emailConfirmationRequired) {
-			this.logger.warn(
-				`Login attempt for email: ${email} - email not confirmed.`,
-			);
-			throw new ORPCError("FORBIDDEN", {
-				message: "Email address not confirmed",
-			});
-		}
-
-		const token = this.jwtCrypto.generate(
-			{
-				email: account.email,
-			},
-			{
-				expiresIn: "7d",
-				subject: String(account.id),
-			},
-		);
-		const expiredAt = new Date();
-		expiredAt.setDate(expiredAt.getDate() + 7);
-
-		/**
-		 * TODO - If the request is made multiples times quickly,
-		 * this can create a same token multiple times, breaking the unique constraint.
-		 * We should implement a better strategy to avoid this.
-		 */
-		const tokenAlreadyExists = await this.sessionRepository.findByToken(token);
-
-		if (!tokenAlreadyExists) {
-			await this.sessionRepository.create({
-				accountId: account.id,
-				token,
-				expiresAt: expiredAt,
-			});
-		}
-
-		this.cookies.set(env.SESSION_TOKEN_NAME, token, {
-			expires: expiredAt,
-			namePrefix: true,
-		});
-
-		return {
-			token: token,
-		};
-	}
-
-	@Catch()
-	async logout() {
-		return this.sessionService.destroy();
-	}
-
-	@Catch()
 	async details(email: string) {
 		const account = await this.accountRepository.details(email);
 
@@ -290,7 +202,7 @@ export class AccountsService {
 			});
 		}
 
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const account = await this.accountRepository.findByEmail(session.email);
 
@@ -452,6 +364,10 @@ export class AccountsService {
 			sampleItems,
 		);
 
+		this.auditService.createAudit("CREATED_CHARACTER", {
+			details: `Character ${newPlayer.name} created for account`,
+		});
+
 		return {
 			name: newPlayer.name,
 			vocation: vocation,
@@ -461,7 +377,7 @@ export class AccountsService {
 
 	@Catch()
 	async storeHistory({ pagination }: { pagination: PaginationInput }) {
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		return this.accountRepository.storeHistory(session.id, {
 			pagination,
@@ -567,7 +483,7 @@ export class AccountsService {
 			comment?: string;
 		},
 	) {
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const character = await this.accountRepository.findCharacterByName(
 			name,
@@ -594,6 +510,11 @@ export class AccountsService {
 			comment: data.comment,
 		});
 
+		this.auditService.createAudit("UPDATED_CHARACTER", {
+			metadata: { name, data },
+			details: `Character ${name} updated`,
+		});
+
 		const proficiencies = parseWeaponProficiencies(
 			updatedCharacter.weapon_proficiencies,
 		);
@@ -606,7 +527,7 @@ export class AccountsService {
 
 	@Catch()
 	async findCharacterByName(name: string) {
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const character = await this.accountRepository.findCharacterByName(
 			name,
@@ -631,7 +552,7 @@ export class AccountsService {
 
 	@Catch()
 	async cancelCharacterDeletionByName(name: string) {
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const character = await this.accountRepository.findCharacterByName(
 			name,
@@ -653,7 +574,7 @@ export class AccountsService {
 
 	@Catch()
 	async scheduleCharacterDeletionByName(name: string, password: string) {
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const account = await this.accountRepository.findByEmail(session.email);
 
@@ -705,6 +626,16 @@ export class AccountsService {
 			deletionDate,
 		);
 
+		this.auditService.createAudit(
+			deletionDate ? "DELETED_CHARACTER" : "UNDELETE_CHARACTER",
+			{
+				metadata: { name, deleteAt: deletionDate?.toISOString() || null },
+				details: `Character ${name} scheduled for deletion at ${
+					deletionDate ? deletionDate.toISOString() : "null"
+				}`,
+			},
+		);
+
 		return {
 			scheduleDate: deletionDate,
 		};
@@ -727,7 +658,7 @@ export class AccountsService {
 			});
 		}
 
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const account = await this.accountRepository.findByEmail(session.email);
 
@@ -752,7 +683,7 @@ export class AccountsService {
 
 		await this.accountRepository.updatePassword(account.id, hashedNewPassword);
 
-		await this.auditRepository.createAudit("CHANGED_PASSWORD_WITH_OLD", {
+		await this.auditService.createAudit("CHANGED_PASSWORD_WITH_OLD", {
 			details: "Password changed using old password for account",
 			success: true,
 		});
@@ -777,7 +708,7 @@ export class AccountsService {
 			});
 		}
 
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const account = await this.accountRepository.findByEmail(session.email);
 
@@ -841,7 +772,7 @@ export class AccountsService {
 			});
 		}
 
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const account = await this.accountRepository.findByEmail(session.email);
 
@@ -879,7 +810,7 @@ export class AccountsService {
 
 		await this.accountRepository.updatePassword(account.id, hashedNewPassword);
 
-		await this.auditRepository.createAudit("RESET_PASSWORD_WITH_TOKEN", {
+		await this.auditService.createAudit("RESET_PASSWORD_WITH_TOKEN", {
 			details: "Password reset using confirmation token for account",
 			success: true,
 		});
@@ -910,7 +841,7 @@ export class AccountsService {
 			});
 		}
 
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const account = await this.accountRepository.findByEmail(session.email);
 
@@ -961,7 +892,7 @@ export class AccountsService {
 
 		await this.accountRepository.updateEmail(account.id, newEmail);
 
-		await this.auditRepository.createAudit("CHANGED_EMAIL_WITH_PASSWORD", {
+		await this.auditService.createAudit("CHANGED_EMAIL_WITH_PASSWORD", {
 			details: `Email changed from ${oldEmail} to ${newEmail} using password`,
 			success: true,
 		});
@@ -998,7 +929,7 @@ export class AccountsService {
 			});
 		}
 
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const account = await this.accountRepository.findByEmail(session.email);
 
@@ -1059,7 +990,7 @@ export class AccountsService {
 
 	@Catch()
 	async previewEmailChange(token: string) {
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const account = await this.accountRepository.findByEmail(session.email);
 
@@ -1096,7 +1027,7 @@ export class AccountsService {
 
 	@Catch()
 	async confirmEmailChange(rawToken: string) {
-		const session = this.metadata.session();
+		const session = this.executionContext.session();
 
 		const account = await this.accountRepository.findByEmail(session.email);
 
@@ -1154,7 +1085,7 @@ export class AccountsService {
 
 		await this.accountRepository.updateEmail(account.id, newEmail);
 
-		await this.auditRepository.createAudit("CHANGED_EMAIL_WITH_CONFIRMATION", {
+		await this.auditService.createAudit("CHANGED_EMAIL_WITH_CONFIRMATION", {
 			details: `Email changed from ${oldEmail} to ${newEmail} using confirmation link`,
 			success: true,
 		});

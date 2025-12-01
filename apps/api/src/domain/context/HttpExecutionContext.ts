@@ -2,27 +2,27 @@ import { ORPCError } from "@orpc/client";
 import { getConnInfo } from "hono/bun";
 import type { ConnInfo } from "hono/conninfo";
 import { inject, injectable } from "tsyringe";
+import type { Cookies } from "@/domain/modules";
 import { TOKENS } from "@/infra/di/tokens";
 import { env } from "@/infra/env";
-import type { Cookies } from "../cookies";
+import type { ExecutionContext, ExecutionSource } from "./types";
 
 @injectable()
-export class Metadata {
+export class HttpExecutionContext implements ExecutionContext {
 	constructor(
-		@inject(TOKENS.Context) private readonly context: ReqContext,
+		@inject(TOKENS.HttpContext) private readonly httpContext: HttpContext,
 		@inject(TOKENS.Cookies) private readonly cookies: Cookies,
 	) {}
 
-	public ip(): string | null {
-		/**
-		 * TODO: For some fucking reason, getConnInfo throw a TypeError
-		 * TypeError: null is not an object (evaluating 'info.address')
-		 * This error happens when calling route using postman or curl.
-		 */
+	source(): ExecutionSource {
+		return "http";
+	}
+
+	ip(): string | null {
 		let info: ConnInfo | null = null;
 
 		try {
-			info = getConnInfo(this.context);
+			info = getConnInfo(this.httpContext);
 		} catch {
 			info = null;
 		}
@@ -43,21 +43,21 @@ export class Metadata {
 
 		return possibleIpHeaders.reduce<string | null>((foundIp, header) => {
 			if (foundIp) return foundIp;
-			const ip = this.context.req.header(header);
+			const ip = this.httpContext.req.header(header);
 			return ip ?? null;
 		}, null);
 	}
 
-	public userAgent(): string | null {
-		return this.context.req.header("user-agent") ?? null;
+	userAgent(): string | null {
+		return this.httpContext.req.header("user-agent") ?? null;
 	}
 
-	public requestId(): string | null {
-		return this.context.get("requestId") ?? null;
+	requestId(): string | null {
+		return this.httpContext.get("requestId") ?? null;
 	}
 
-	public bearer(): string | null {
-		const authHeader = this.context.req.header("authorization");
+	bearer(): string | null {
+		const authHeader = this.httpContext.req.header("authorization");
 		if (!authHeader) return null;
 
 		const [type, token] = authHeader.split(" ");
@@ -68,7 +68,7 @@ export class Metadata {
 		return token;
 	}
 
-	public bearerFromCookies(): string | null {
+	bearerFromCookies(): string | null {
 		const token = this.cookies.get(env.SESSION_TOKEN_NAME, {
 			namePrefix: true,
 		});
@@ -76,8 +76,8 @@ export class Metadata {
 		return token;
 	}
 
-	public sessionOrNull(): AuthenticatedSession | null {
-		const session = this.context.get("session");
+	sessionOrNull(): AuthenticatedSession | null {
+		const session = this.httpContext.get("session");
 
 		if (!session) {
 			return null;
@@ -86,8 +86,8 @@ export class Metadata {
 		return session;
 	}
 
-	public session(): AuthenticatedSession {
-		const session = this.context.get("session");
+	session(): AuthenticatedSession {
+		const session = this.httpContext.get("session");
 
 		if (!session) {
 			throw new ORPCError("UNAUTHORIZED", {

@@ -7,7 +7,6 @@ import {
 	type MiforgeConfig,
 	MiforgeConfigSchema,
 } from "@/shared/schemas/Config";
-import type { AuditRepository } from "../audit";
 
 const CONFIG_ID = 1 as const;
 
@@ -17,8 +16,6 @@ export class ConfigRepository {
 		@inject(TOKENS.Prisma) private readonly database: Prisma,
 		@inject(TOKENS.Cache) private readonly cache: Cache,
 		@inject(TOKENS.CacheKeys) private readonly cacheKeys: CacheKeys,
-		@inject(TOKENS.AuditRepository)
-		private readonly auditRepository: AuditRepository,
 	) {}
 
 	private async loadFromDb(): Promise<MiforgeConfig> {
@@ -72,15 +69,6 @@ export class ConfigRepository {
 			},
 			update: {
 				data: JSON.stringify(merged),
-			},
-		});
-
-		await this.auditRepository.createAudit("UPDATED_CONFIG", {
-			success: true,
-			details: "Configuration updated",
-			metadata: {
-				oldConfig: current,
-				newConfig: merged,
 			},
 		});
 
