@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/sdk/utils/cn";
 
 const Icons = {
+	management: "/assets/icons/32/loremaster_doll.gif",
 	news: "/assets/icons/32/news-menu.gif",
 	sphere: "/assets/icons/32/armillary_sphere.gif",
 	munster: "/assets/icons/32/baby_munster.gif",

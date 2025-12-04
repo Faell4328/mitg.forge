@@ -30,6 +30,7 @@ import type {
 	ChangePasswordWithTokenUseCase,
 	ConfigInfoUseCase,
 	ConfigUpdateUseCase,
+	ListAccountsUseCase,
 	SessionAuthenticatedUseCase,
 	SessionInfoUseCase,
 	SessionNotAuthenticatedUseCase,
@@ -183,6 +184,7 @@ export const TOKENS = {
 	AccountChangePasswordWithTokenUseCase: token<ChangePasswordWithTokenUseCase>(
 		"AccountChangePasswordWithTokenUseCase",
 	),
+	ListAccountsUseCase: token<ListAccountsUseCase>("ListAccountsUseCase"),
 
 	WorldsListUseCase: token<WorldsListUseCase>("WorldsListUseCase"),
 

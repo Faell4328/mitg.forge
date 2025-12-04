@@ -23,6 +23,9 @@ import { Route as AuthAccountPlayerNameDeleteIndexRouteImport } from './routes/_
 
 const PublicTermsIndexLazyRouteImport = createFileRoute('/_public/terms/')()
 const Not_authLoginIndexLazyRouteImport = createFileRoute('/_not_auth/login/')()
+const AuthListAccountsIndexLazyRouteImport = createFileRoute(
+  '/_auth/list-accounts/',
+)()
 const Not_authAccountCreateIndexLazyRouteImport = createFileRoute(
   '/_not_auth/account/create/',
 )()
@@ -43,6 +46,9 @@ const AuthAccountAudit_historyIndexLazyRouteImport = createFileRoute(
 )()
 const Not_authAccountEmailConfirmIndexLazyRouteImport = createFileRoute(
   '/_not_auth/account/$email/confirm/',
+)()
+const AuthAdminAccountsListIndexLazyRouteImport = createFileRoute(
+  '/_auth/admin/accounts/list/',
 )()
 
 const PublicRouteRoute = PublicRouteRouteImport.update({
@@ -76,6 +82,14 @@ const Not_authLoginIndexLazyRoute = Not_authLoginIndexLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_not_auth/login/index.lazy').then((d) => d.Route),
 )
+const AuthListAccountsIndexLazyRoute =
+  AuthListAccountsIndexLazyRouteImport.update({
+    id: '/list-accounts/',
+    path: '/list-accounts/',
+    getParentRoute: () => AuthRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_auth/list-accounts/index.lazy').then((d) => d.Route),
+  )
 const AuthAccountIndexRoute = AuthAccountIndexRouteImport.update({
   id: '/account/',
   path: '/account/',
@@ -149,6 +163,16 @@ const Not_authAccountEmailConfirmIndexLazyRoute =
       (d) => d.Route,
     ),
   )
+const AuthAdminAccountsListIndexLazyRoute =
+  AuthAdminAccountsListIndexLazyRouteImport.update({
+    id: '/admin/accounts/list/',
+    path: '/admin/accounts/list/',
+    getParentRoute: () => AuthRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_auth/admin/accounts/list/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const AuthAccountPlayerCreateIndexRoute =
   AuthAccountPlayerCreateIndexRouteImport.update({
     id: '/account/player/create/',
@@ -193,6 +217,7 @@ const AuthAccountPlayerNameDeleteIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/account': typeof AuthAccountIndexRoute
+  '/list-accounts': typeof AuthListAccountsIndexLazyRoute
   '/login': typeof Not_authLoginIndexLazyRoute
   '/terms': typeof PublicTermsIndexLazyRoute
   '/account/audit_history': typeof AuthAccountAudit_historyIndexLazyRoute
@@ -202,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/account/reset_password': typeof AuthAccountReset_passwordIndexLazyRoute
   '/account/create': typeof Not_authAccountCreateIndexLazyRoute
   '/account/player/create': typeof AuthAccountPlayerCreateIndexRoute
+  '/admin/accounts/list': typeof AuthAdminAccountsListIndexLazyRoute
   '/account/$email/confirm': typeof Not_authAccountEmailConfirmIndexLazyRoute
   '/account/player/$name/delete': typeof AuthAccountPlayerNameDeleteIndexRoute
   '/account/player/$name/edit': typeof AuthAccountPlayerNameEditIndexRoute
@@ -210,6 +236,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/account': typeof AuthAccountIndexRoute
+  '/list-accounts': typeof AuthListAccountsIndexLazyRoute
   '/login': typeof Not_authLoginIndexLazyRoute
   '/terms': typeof PublicTermsIndexLazyRoute
   '/account/audit_history': typeof AuthAccountAudit_historyIndexLazyRoute
@@ -219,6 +246,7 @@ export interface FileRoutesByTo {
   '/account/reset_password': typeof AuthAccountReset_passwordIndexLazyRoute
   '/account/create': typeof Not_authAccountCreateIndexLazyRoute
   '/account/player/create': typeof AuthAccountPlayerCreateIndexRoute
+  '/admin/accounts/list': typeof AuthAdminAccountsListIndexLazyRoute
   '/account/$email/confirm': typeof Not_authAccountEmailConfirmIndexLazyRoute
   '/account/player/$name/delete': typeof AuthAccountPlayerNameDeleteIndexRoute
   '/account/player/$name/edit': typeof AuthAccountPlayerNameEditIndexRoute
@@ -231,6 +259,7 @@ export interface FileRoutesById {
   '/_public': typeof PublicRouteRouteWithChildren
   '/_public/': typeof PublicIndexRoute
   '/_auth/account/': typeof AuthAccountIndexRoute
+  '/_auth/list-accounts/': typeof AuthListAccountsIndexLazyRoute
   '/_not_auth/login/': typeof Not_authLoginIndexLazyRoute
   '/_public/terms/': typeof PublicTermsIndexLazyRoute
   '/_auth/account/audit_history/': typeof AuthAccountAudit_historyIndexLazyRoute
@@ -240,6 +269,7 @@ export interface FileRoutesById {
   '/_auth/account/reset_password/': typeof AuthAccountReset_passwordIndexLazyRoute
   '/_not_auth/account/create/': typeof Not_authAccountCreateIndexLazyRoute
   '/_auth/account/player/create/': typeof AuthAccountPlayerCreateIndexRoute
+  '/_auth/admin/accounts/list/': typeof AuthAdminAccountsListIndexLazyRoute
   '/_not_auth/account/$email/confirm/': typeof Not_authAccountEmailConfirmIndexLazyRoute
   '/_auth/account/player/$name/delete/': typeof AuthAccountPlayerNameDeleteIndexRoute
   '/_auth/account/player/$name/edit/': typeof AuthAccountPlayerNameEditIndexRoute
@@ -250,6 +280,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
+    | '/list-accounts'
     | '/login'
     | '/terms'
     | '/account/audit_history'
@@ -259,6 +290,7 @@ export interface FileRouteTypes {
     | '/account/reset_password'
     | '/account/create'
     | '/account/player/create'
+    | '/admin/accounts/list'
     | '/account/$email/confirm'
     | '/account/player/$name/delete'
     | '/account/player/$name/edit'
@@ -267,6 +299,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/list-accounts'
     | '/login'
     | '/terms'
     | '/account/audit_history'
@@ -276,6 +309,7 @@ export interface FileRouteTypes {
     | '/account/reset_password'
     | '/account/create'
     | '/account/player/create'
+    | '/admin/accounts/list'
     | '/account/$email/confirm'
     | '/account/player/$name/delete'
     | '/account/player/$name/edit'
@@ -287,6 +321,7 @@ export interface FileRouteTypes {
     | '/_public'
     | '/_public/'
     | '/_auth/account/'
+    | '/_auth/list-accounts/'
     | '/_not_auth/login/'
     | '/_public/terms/'
     | '/_auth/account/audit_history/'
@@ -296,6 +331,7 @@ export interface FileRouteTypes {
     | '/_auth/account/reset_password/'
     | '/_not_auth/account/create/'
     | '/_auth/account/player/create/'
+    | '/_auth/admin/accounts/list/'
     | '/_not_auth/account/$email/confirm/'
     | '/_auth/account/player/$name/delete/'
     | '/_auth/account/player/$name/edit/'
@@ -351,6 +387,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof Not_authLoginIndexLazyRouteImport
       parentRoute: typeof Not_authRouteRoute
+    }
+    '/_auth/list-accounts/': {
+      id: '/_auth/list-accounts/'
+      path: '/list-accounts'
+      fullPath: '/list-accounts'
+      preLoaderRoute: typeof AuthListAccountsIndexLazyRouteImport
+      parentRoute: typeof AuthRouteRoute
     }
     '/_auth/account/': {
       id: '/_auth/account/'
@@ -408,6 +451,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Not_authAccountEmailConfirmIndexLazyRouteImport
       parentRoute: typeof Not_authRouteRoute
     }
+    '/_auth/admin/accounts/list/': {
+      id: '/_auth/admin/accounts/list/'
+      path: '/admin/accounts/list'
+      fullPath: '/admin/accounts/list'
+      preLoaderRoute: typeof AuthAdminAccountsListIndexLazyRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
     '/_auth/account/player/create/': {
       id: '/_auth/account/player/create/'
       path: '/account/player/create'
@@ -441,12 +491,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthRouteRouteChildren {
   AuthAccountIndexRoute: typeof AuthAccountIndexRoute
+  AuthListAccountsIndexLazyRoute: typeof AuthListAccountsIndexLazyRoute
   AuthAccountAudit_historyIndexLazyRoute: typeof AuthAccountAudit_historyIndexLazyRoute
   AuthAccountCoins_historyIndexLazyRoute: typeof AuthAccountCoins_historyIndexLazyRoute
   AuthAccountDetailsIndexLazyRoute: typeof AuthAccountDetailsIndexLazyRoute
   AuthAccountRegistrationIndexLazyRoute: typeof AuthAccountRegistrationIndexLazyRoute
   AuthAccountReset_passwordIndexLazyRoute: typeof AuthAccountReset_passwordIndexLazyRoute
   AuthAccountPlayerCreateIndexRoute: typeof AuthAccountPlayerCreateIndexRoute
+  AuthAdminAccountsListIndexLazyRoute: typeof AuthAdminAccountsListIndexLazyRoute
   AuthAccountPlayerNameDeleteIndexRoute: typeof AuthAccountPlayerNameDeleteIndexRoute
   AuthAccountPlayerNameEditIndexRoute: typeof AuthAccountPlayerNameEditIndexRoute
   AuthAccountPlayerNameUndeleteIndexRoute: typeof AuthAccountPlayerNameUndeleteIndexRoute
@@ -454,6 +506,7 @@ interface AuthRouteRouteChildren {
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthAccountIndexRoute: AuthAccountIndexRoute,
+  AuthListAccountsIndexLazyRoute: AuthListAccountsIndexLazyRoute,
   AuthAccountAudit_historyIndexLazyRoute:
     AuthAccountAudit_historyIndexLazyRoute,
   AuthAccountCoins_historyIndexLazyRoute:
@@ -463,6 +516,7 @@ const AuthRouteRouteChildren: AuthRouteRouteChildren = {
   AuthAccountReset_passwordIndexLazyRoute:
     AuthAccountReset_passwordIndexLazyRoute,
   AuthAccountPlayerCreateIndexRoute: AuthAccountPlayerCreateIndexRoute,
+  AuthAdminAccountsListIndexLazyRoute: AuthAdminAccountsListIndexLazyRoute,
   AuthAccountPlayerNameDeleteIndexRoute: AuthAccountPlayerNameDeleteIndexRoute,
   AuthAccountPlayerNameEditIndexRoute: AuthAccountPlayerNameEditIndexRoute,
   AuthAccountPlayerNameUndeleteIndexRoute:
