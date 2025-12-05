@@ -235,7 +235,7 @@ export class LostAccountService {
 		const registration =
 			await this.accountRegistrationRepository.findByAccountId(account.id);
 
-		if (!registration || !registration.recoveryKey) {
+		if (!registration?.recoveryKey) {
 			throw new ORPCError("UNAUTHORIZED", {
 				message: message,
 			});
