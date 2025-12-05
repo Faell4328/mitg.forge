@@ -1,12 +1,7 @@
 import { Link, type LinkProps, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { cn } from "@/sdk/utils/cn";
-
-const Icons = {
-	news: "/assets/icons/32/news-menu.gif",
-	sphere: "/assets/icons/32/armillary_sphere.gif",
-	munster: "/assets/icons/32/baby_munster.gif",
-};
+import { Icons } from "..";
 
 type Props = {
 	label: string;
@@ -38,7 +33,8 @@ export const MenuItem = ({ icon, label, menus = [] }: Props) => {
 
 	return (
 		<div>
-			<div
+			<button
+				type="button"
 				className={cn(
 					"hover:filter-hover relative flex h-8 w-[170px] cursor-pointer items-center gap-1 bg-no-repeat px-1 transition-all",
 				)}
@@ -56,7 +52,7 @@ export const MenuItem = ({ icon, label, menus = [] }: Props) => {
 				<span className="fondamento-title flex-1 text-center text-base capitalize">
 					{label}
 				</span>
-			</div>
+			</button>
 
 			<div
 				className="relative flex h-0 w-[170px] flex-col overflow-hidden px-0.5 transition-all duration-300"
